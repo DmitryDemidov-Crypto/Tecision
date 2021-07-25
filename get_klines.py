@@ -125,9 +125,9 @@ def get_symbol_trade_data(clnt, smbl, delta_t = 12000):
 
     trades = client.get_aggregate_trades(symbol = smbl, startTime = past, endTime  = now )
     
-    output = {}
+    output = {} ; len_cup = len(trades)
     
-    if len(trades) > 0:
+    if  len_cup > 0:
         
         frame = pd.DataFrame(trades)
         
@@ -144,7 +144,11 @@ def get_symbol_trade_data(clnt, smbl, delta_t = 12000):
         mean        =  frame['p'].mean()
         median      =  frame['p'].median()
         volatility  =  frame['p'].mad()
-        slope       =  np.polyfit(fit_dom, frame['p'], 1)[0]
+        
+        if len_cup > 1:
+            slope       =  np.polyfit(fit_dom, frame['p'], 1)[0]
+        else:
+            slope       =  0.0
         
         output.update({'mean' : mean, 'median' : median, 'volatility' : volatility, 'slope' : slope})
         
