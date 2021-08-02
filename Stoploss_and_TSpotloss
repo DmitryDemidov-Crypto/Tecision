@@ -1,0 +1,120 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Jul 25 01:29:55 2021
+
+@author: Asahi
+"""
+
+def stop_loss(input_price, prc, coin_n, volume, find_max = 'find_max'):
+    
+    '''
+    stop_fixed_price можно использовать двумя разными способами
+    
+    1. Пользователь сам назначил эту цену и мы её на каждом временном шаге передаём в функцию
+    
+    2. Пользователь выбрал взять текущую цену за stop_fixed_price. Тогда мы запоминаем эту текущую
+       цену и в каждый новый момент времени передаём её в функцию
+
+    У нас должен быть реализован метод получения stop_fixed_price
+    '''
+    
+    global STOP_FIXED_PRICE
+
+    if find_max == 'find_max':
+        
+        if input_price > STOP_FIXED_PRICE: 
+
+            STOP_FIXED_PRICE = input_price
+            
+            # и тут надо записать max_p в stop_fixed_price
+        
+        if input_price <= STOP_FIXED_PRICE - STOP_FIXED_PRICE*prc:
+            
+            # Продаём методом  sell_coin монету coin_n в собственный стейблкоин c объемом volume 
+            # Цену продажи вернуть из return'а функции sell, sell_price взять оттуда
+            
+            sell_price = input_price # поправить  ^^^ 
+
+            return {'type' : 'sell', 'sell_price' : sell_price, 'volume': volume}
+        
+    else:
+        
+        if input_price <= STOP_FIXED_PRICE - STOP_FIXED_PRICE*prc:
+        
+        # Продаём методом  sell_coin монету coin_n в собственный стейблкоин c объемом volume 
+        # Цену продажи вернуть из return'а функции sell, sell_price взять оттуда
+        
+            sell_price = input_price # поправить  ^^^ 
+    
+            return {'type' : 'sell', 'sell_price' : sell_price, 'volume': volume}
+        
+    return 
+
+
+def trailing_stop_loss(input_price, prc, pr_t, coin_n, volume, find_max = 'find_max'):
+    
+    '''
+    stop_fixed_price можно использовать двумя разными способами
+    
+    1. Пользователь сам назначил эту цену и мы её на каждом временном шаге передаём в функцию
+    
+    2. Пользователь выбрал взять текущую цену за stop_fixed_price. Тогда мы запоминаем эту текущую
+       цену и в каждый новый момент времени передаём её в функцию
+       
+    У нас должен быть реализован метод получения stop_fixed_price
+    '''
+    
+    global STOP_FIXED_PRICE
+    global STATUS_TRAILING_SELL
+    global STOP_ATT_LINE
+
+    if find_max == 'find_max':
+        
+        if input_price > STOP_FIXED_PRICE: 
+            STOP_FIXED_PRICE = input_price
+            
+            # и тут надо записать max_p в stop_fixed_price
+        
+        if input_price <= STOP_FIXED_PRICE - STOP_FIXED_PRICE*prc:
+            
+            if STATUS_TRAILING_SELL == 0:
+                STOP_ATT_LINE = STOP_FIXED_PRICE - STOP_FIXED_PRICE*prc   # определить STOP_ATT_LINE
+                STATUS_TRAILING_SELL = 1      # активируем отслеживание цены
+
+            
+        if STATUS_TRAILING_SELL == 1 and input_price <= STOP_ATT_LINE - STOP_ATT_LINE*pr_t:
+            
+            # Продаём методом  sell_coin монету coin_n в собственный стейблкоин c объемом volume 
+            # Цену продажи вернуть из return'а функции sell, sell_price взять оттуда
+
+            sell_price = input_price # поправить  ^^^
+            
+            STATUS_TRAILING_SELL = 0
+            
+            return {'type' : 'sell', 'sell_price' : sell_price, 'volume': volume}
+            
+            
+        if STATUS_TRAILING_SELL == 1 and input_price > STOP_ATT_LINE + STOP_ATT_LINE*pr_t:
+            
+            STOP_ATT_LINE = input_price # перезаписать STOP_ATT_LINE
+
+    else:
+        
+        if input_price <= STOP_FIXED_PRICE - STOP_FIXED_PRICE*prc:
+            
+            if STATUS_TRAILING_SELL == 0:
+                STOP_ATT_LINE = input_price   # определить STOP_ATT_LINE
+                STATUS_TRAILING_SELL = 1 # активируем отслеживание цены
+            
+        if STATUS_TRAILING_SELL == 1 and input_price <= STOP_ATT_LINE - STOP_ATT_LINE*pr_t:
+            
+            # Продаём методом  sell_coin монету coin_n в собственный стейблкоин c объемом volume 
+            # Цену продажи вернуть из return'а функции sell, sell_price взять оттуда
+            sell_price = input_price # поправить  ^^^
+            return {'type' : 'sell', 'sell_price' : sell_price, 'volume': volume}
+            
+        if STATUS_TRAILING_SELL == 1 and input_price > STOP_ATT_LINE + STOP_ATT_LINE*pr_t:
+            
+            STOP_ATT_LINE = input_price # перезаписать STOP_ATT_LINE
+        
+    return 
